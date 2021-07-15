@@ -1,0 +1,611 @@
+#include <time.h>
+#include <fstream>
+#include <sstream>
+#include <iostream>
+#include <vector>
+#include <iomanip>
+
+using namespace std;
+
+class video
+{
+public:
+    int video_id;
+    string title;
+    string genre;
+    string production;
+    int num_copies;
+    string file_name;
+    void readfile()
+    {
+    }
+    void new_video()
+    {
+        // mag add ng movies
+        video_id = autonum_gen();
+        cout << "===================\n";
+        cout << "Video id : " << video_id;
+        cout << "\nTitle : ";
+        cin.ignore();
+        getline(cin, title);
+        cout << "Genre : ";
+        getline(cin, genre);
+
+        cout << "Production : ";
+        getline(cin, production);
+        cout << "Number of copies : ";
+        cin >> num_copies;
+        cin.ignore();
+        cout << "Image File Name : ";
+        getline(cin, file_name);
+        string vid_file = to_string(video_id) + ", " + title + ", " + genre + ",  " + production + ",  " + to_string(num_copies) + ",  " + file_name + "\n"; //concatinate
+
+        ofstream vidFile;
+        vidFile.open("videosDB.txt", ios::app);
+        if (vidFile.is_open())
+        {
+            vidFile << vid_file;
+        }
+        else
+        {
+            cout << "ERROR \n";
+        }
+        vidFile.close();
+    }
+    int autonum_gen()
+    {
+        // GENERATE UNIQUE ID
+        // BASED SA RANDOM TIME
+        // NO SAME ID
+        srand(time(NULL));
+        int n = rand();
+        return n;
+    }
+    void readDB()
+
+    {
+        const char separator = ' ';
+        const int dataW = 30;
+        string ent;
+        cout << "===================================== ALL VIDEOS ==================================================================== \n ";
+        cout << left << setw(11) << " Video_ID    " << setfill(separator);
+        cout << left << setw(dataW) << "Movie Title  " << setfill(separator);
+        cout << left << setw(15) << "Genre   " << setfill(separator);
+        cout << left << setw(20) << "Production " << setfill(separator);
+        cout << left << setw(10) << "# Copies " << setfill(separator);
+        cout << left << setw(dataW) << " Image" << setfill(separator);
+        cout << "\n__________________________________________________________________________________________________________________";
+        cout << "\n";
+        ifstream inFile("videosDB.txt");
+        if (inFile.is_open())
+        {
+            string line;
+            while (getline(inFile, line))
+            {
+                stringstream ss(line); //collapse output
+                string video_id, title, genre, production, num_copies, file_name;
+
+                getline(ss, video_id, ','); // ',' -- delimeter
+                cout << left << setw(11) << setfill(separator) << video_id << " |";
+
+                getline(ss, title, ',');
+                cout << left << setw(dataW) << setfill(separator) << title << " |";
+
+                getline(ss, genre, ',');
+                cout << left << setw(15) << setfill(separator) << genre << " |";
+
+                getline(ss, production, ',');
+                cout << left << setw(30) << setfill(separator) << production << " |";
+
+                getline(ss, num_copies, ',');
+                cout << left << setw(10) << setfill(separator) << num_copies << " |";
+
+                getline(ss, file_name, ',');
+                cout << left << setw(dataW) << setfill(separator) << file_name;
+                cout << "\n";
+            }
+            inFile.close();
+            cout << "\n";
+        }
+    }
+    void videoDetails(string type = "")
+    {
+        system("CLS");
+        string search_vid_id;
+        bool found = false;
+        int num_copy;
+        if (type == "availability")
+
+        {
+            cout << "Check Video Availability";
+        }
+        else
+        {
+            cout << " \n======= VIDEO DETAILS ======= \n";
+        }
+        cout << "\nVideo ID : ";
+        cin.ignore();
+        getline(cin, search_vid_id);
+
+        ifstream inFile("videosDB.txt");
+        if (inFile.is_open())
+        {
+            string line;
+            while (getline(inFile, line))
+            {
+                stringstream ss(line);
+                string video_id, title, genre, production, num_copies, file_name;
+
+                getline(ss, video_id, ',');
+                if (search_vid_id == (video_id))
+                {
+                    // cout << "Video_ID : " << video_id + "\n";
+                    getline(ss, title, ',');
+                    cout << "Movie Title: " << title + "\n";
+                    getline(ss, genre, ',');
+                    cout << "Genre : " << genre + "\n";
+                    getline(ss, production, ',');
+                    cout << "Production : " << production + "\n";
+                    getline(ss, num_copies, ',');
+                    cout << "Number of Copies : " << num_copies + "\n";
+                    getline(ss, file_name, ',');
+                    cout << "Movie Image Filename : " << file_name + "\n";
+                    if (type == "availability")
+
+                    {
+                        num_copy = stoi(num_copies);
+                        if (num_copy > 0)
+
+                        {
+                            cout << "Availability : Available \n";
+                        }
+                        else
+                        {
+                            cout << "Availability : Unavailable \n";
+                        }
+                    }
+                    found = true;
+                }
+            }
+            inFile.close();
+
+            if (!found)
+            {
+                cout << "Oopss!! Movie Not Found!";
+            }
+            cout << "\n";
+        }
+    }
+    int rent_video()
+    {
+        string in_customer_id, in_video_id, all_vid_id, cust_id_rent, rent_opt, rent_data;
+        bool found = false;
+
+        system("CLS");
+        cout << "\nEnter Customer ID : ";
+        cin.ignore();
+        getline(cin, in_customer_id);
+        ifstream inFile("customers.txt");
+        ifstream invidFile("videosDB.txt");
+        ofstream invidRentedFile;
+
+        invidRentedFile.open("CUSTOMER-RENT.txt", ios::app);
+        if (inFile.is_open())
+        {
+            string line;
+            while (getline(inFile, line))
+            {
+                stringstream ss(line);
+                string customer_id, name, address;
+
+                getline(ss, customer_id, ':');
+                if (in_customer_id == customer_id)
+                {
+                    getline(ss, name, ':');
+                    cout << "Name : " << name + "\n";
+                    getline(ss, address, ':');
+                    cout << "Address : " << address + "\n";
+                    found = true;
+                    cust_id_rent = customer_id;
+                }
+            }
+            inFile.close();
+            if (!found)
+            {
+                string in;
+                cout << "No customer record found! \n";
+                return 0;
+            }
+            found = false;
+        }
+        cout << " \n== VIDEOS TO RENT == \n ";
+        if (invidFile.is_open() && invidRentedFile.is_open())
+        {
+            do
+            {
+                string line;
+                cout << "Video ID: ";
+
+                getline(cin, in_video_id);
+                while (getline(invidFile, line))
+                {
+                    stringstream vv(line);
+                    string video_id, title, genre, production, num_copies, file_name;
+                    getline(vv, video_id, ',');
+
+                    if (in_video_id == video_id)
+                    {
+                        found = true;
+                        getline(vv, title, ',');
+                        cout << "Movie Title: " << title + "\n";
+                        getline(vv, genre, ',');
+                        getline(vv, production, ','); //not shown up/down
+                        getline(vv, num_copies, ',');
+                        cout << "Number of copies: " << num_copies + "\n";
+
+                        rent_data = cust_id_rent + ", " + video_id + ", " + title + "\n";
+                        invidRentedFile << rent_data;
+                    }
+                }
+                if (found)
+                {
+                    cout << "Rent another video?  ";
+                    getline(cin, rent_opt);
+                }
+                else
+                {
+                    cout << "NO VIDEO RECORD FOUND! \n";
+                }
+                invidFile.clear();
+                invidFile.seekg(0, ios::beg);
+            } while (rent_opt != "N" && rent_opt != "n");
+            cout << "\n Thank you!";
+        }
+
+        else
+        {
+            cout << "  Error! Something Went Wrong.";
+            return 0;
+        }
+        invidFile.close();
+        invidRentedFile.close();
+        return 0;
+    }
+    int return_video(string type) // string 'type'- opt-3
+                                  // pag menu ay [3] return a video
+    {
+        string in_customer_id, cust_id_rent;
+        bool found = false;
+        // customer add
+        system("CLS");
+        cout << "\nEnter Customer ID : ";
+        cin.ignore();
+        getline(cin, in_customer_id);
+
+        ifstream inFile("customers.txt");
+        if (inFile.is_open())
+        {
+            string line;
+            while (getline(inFile, line))
+            {
+                stringstream ss(line);
+                string customer_id, name, address;
+
+                getline(ss, customer_id, ':');
+                if (in_customer_id == customer_id)
+                {
+                    getline(ss, name, ':');
+                    cout << "Name : " << name + "\n";
+                    getline(ss, address, ':');
+                    cout << "Address: " << address + "\n";
+                    found = true;
+                    cust_id_rent = customer_id;
+                }
+            }
+            inFile.close();
+            if (!found)
+            {
+                string in;
+                cout << "No customer record found! \n";
+                return 0;
+            }
+            found = false;
+        }
+
+        ifstream ifvidRentedFile("CUSTOMER-RENT.txt");
+        if (ifvidRentedFile.is_open())
+        {
+            if (type == "opt-3")
+            {
+                cout << "**** RENTED VIDEOS *****\n";
+            }
+            else
+            {
+                cout << "\nList of videos rented\n";
+                cout << "\nvideo ID     |  Movie title\n";
+                cout << "________________________________\n";
+            }
+            string line;
+            string sbline;
+            while (getline(ifvidRentedFile, line))
+            {
+                stringstream ss(line);
+                string customer_id, rented_id, movie_title;
+
+                getline(ss, customer_id, ',');
+                if (in_customer_id == customer_id)
+                {
+                    getline(ss, rented_id, ',');
+                    getline(ss, movie_title, ',');
+                    if (type == "opt-3")
+                    {
+                        cout << "\nVideo ID : " << rented_id << "\n";
+                    }
+                    else
+                    {
+                        cout << "\n"
+                             << rented_id << "    | " << movie_title;
+                    }
+                    found = true;
+                }
+            }
+
+            if (!found)
+            {
+                string in;
+                cout << "No customer record found! \n";
+                return 0;
+            }
+        }
+        else
+        {
+            cout << "  Error! Something Went Wrong.";
+            return 0;
+        }
+        ifvidRentedFile.close();
+
+        if (type == "opt-3") //delete rented when returned
+        {
+
+            string line;
+            ifstream in("CUSTOMER-RENT.txt");
+            if (!in.is_open())
+            {
+                cout << "Input file failed to open\n";
+                return 1;
+            }
+            ofstream out("tempStorage.txt"); //not visible yung text
+            while (getline(in, line))
+            {
+                stringstream ss(line);
+                string customer_id, video_id;
+
+                getline(ss, customer_id, ',');
+                if (in_customer_id != customer_id)
+                {
+                    getline(ss, video_id, ',');
+                    getline(ss, title, ',');
+                    string new_rec = in_customer_id + ", " + video_id + ", " + title + "\n";
+                    out << new_rec;
+                }
+            }
+            in.close();
+            out.close();
+            remove("CUSTOMER-RENT.txt");
+            rename("tempStorage.txt", "CUSTOMER-RENT.txt");
+            cout << "\n Video/s Successfully returned!\n";
+        }
+        return 0;
+    }
+};
+
+class customer
+{
+
+public:
+    int customer_id;
+    string name;
+    string address;
+    string cust_data;
+    void new_customer()
+    {
+        customer_id = autonum_gen();
+        cout << "===================\n";
+        cout << "Customer ID : " << customer_id;
+        cout << "\nName : ";
+        cin.ignore();
+        getline(cin, name);
+        cout << "Address : ";
+        getline(cin, address);
+        cust_data = to_string(customer_id) + ": " + name + ": " + address + "\n";
+
+        ofstream custF;
+        custF.open("customers.txt", ios::app);
+        if (custF.is_open())
+        {
+            custF << cust_data;
+        }
+        else
+        {
+            cout << "ERROR \n";
+        }
+        custF.close();
+    }
+    void display_customers()
+    {
+        const char separator = ' ';
+        const int dataW = 20;
+        cout << " ===================================== ALL CUTSTOMERS =============================== \n ";
+        cout << "CUSTOMER ID | NAME | ADDRESS\n";
+        cout << "\n";
+        ifstream inFile("customers.txt");
+        if (inFile.is_open())
+        {
+            string line;
+            while (getline(inFile, line))
+            {
+                stringstream ss(line);
+                string customer_id, name, address;
+
+                getline(ss, customer_id, ':');
+                cout << left << setw(11) << setfill(separator) << customer_id << " |";
+
+                getline(ss, name, ':');
+                cout << left << setw(dataW) << setfill(separator) << name << " |";
+
+                getline(ss, address, ':');
+                cout << left << setw(dataW) << setfill(separator) << address << " \n";
+            }
+            inFile.close();
+            cout << "\n";
+            cout << "\n ";
+            cout << "\n ";
+        }
+    }
+    int customer_menu()
+    {
+        video VIDEO;
+        int cust_opt;
+        cout << "             SELECT OPTION\n";
+        cout << "-----------------------------------------\n";
+        cout << "[1] Add New Customer  \n";
+        cout << "[2] Show Customer Details  \n";
+        cout << "[3] List of Videos Rented by a Customer  \n";
+        cout << "[8] Exit Program \n";
+        cout << "========================================\n";
+        cout << "Enter Option : ";
+        cin.ignore();
+        cin >> cust_opt;
+
+        switch (cust_opt)
+        {
+        case 1:
+
+            system("CLS");
+            new_customer();
+            break;
+        case 2:
+
+            system("CLS");
+            display_customers();
+            break;
+        case 3:
+
+            system("CLS");
+            VIDEO.return_video("opt-7-3");
+            break;
+        case 8:
+            cout << "Program Terminated! \nExiting........";
+            cout << "\n";
+            break;
+
+        default:
+            cout << "Invalid Input";
+            break;
+        }
+        return cust_opt;
+    }
+
+    int autonum_gen()
+    {
+        srand(time(NULL));
+        int n = rand();
+        return n;
+    }
+};
+
+int main()
+{
+    video VIDEO;
+    customer CUSTOMER;
+    int base_opt;
+    string ent;
+    do
+    {
+        // cout << "========================================\n";
+        cout << "             SELECT OPTION\n";
+        cout << "========================================\n";
+        cout << "[1] New Video  \n";
+        cout << "[2] Rent a Video  \n";
+        cout << "[3] Return a Video  \n";
+        cout << "[4] Show Video Details  \n";
+        cout << "[5] Display all Videos  \n";
+        cout << "[6] Check Video Availability  \n";
+        cout << "[7] Customer Maintenance  \n";
+        cout << "[8] Exit Program  \n";
+        cout << "========================================\n";
+        cout << "Enter Option : ";
+        cin >> base_opt;
+        // menu
+        switch (base_opt)
+        {
+        case 1: // new vid
+
+            system("CLS");
+            VIDEO.new_video();
+            cout << "\n\nPress <Enter> to continue";
+            getline(cin, ent);
+            system("CLS");
+            break;
+        case 2:
+            system("CLS");
+            VIDEO.rent_video();
+            cout << "\n\nPress <Enter> to continue";
+            getline(cin, ent);
+            system("CLS");
+            break;
+        case 3:
+            system("CLS");
+            VIDEO.return_video("opt-3"); //parameter
+            cout << "\n\nPress <Enter> to continue";
+            getline(cin, ent);
+            system("CLS");
+            break;
+        case 4:
+            system("CLS");
+            VIDEO.videoDetails();
+            cout << "\n\nPress <Enter> to continue";
+            getline(cin, ent);
+            system("CLS");
+            break;
+        case 5:
+            system("CLS");
+            VIDEO.readDB();
+            cout << "\n\nPress <Enter> to continue";
+            getline(cin, ent);
+            cin.ignore();
+            system("CLS");
+            break;
+        case 6:
+            system("CLS");
+            VIDEO.videoDetails("availability");
+            cout << "\n\nPress <Enter> to continue";
+            getline(cin, ent);
+            system("CLS");
+            break;
+        case 7:
+            system("CLS");
+            int option;
+            option = CUSTOMER.customer_menu();
+            if (option == 8)
+            {
+                return 0;
+            }
+            cout << "\n\nPress <Enter> to continue";
+            getline(cin, ent);
+            cin.ignore();
+            system("CLS");
+            break;
+        case 8:
+            cout << "Program Terminated! \nExiting........";
+            cout << "\n";
+            return 0;
+            break;
+
+        default:
+            cout << "Invalid Input";
+            break;
+        }
+    } while (base_opt != 8);
+    return 0;
+}
